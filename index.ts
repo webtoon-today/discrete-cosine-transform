@@ -95,7 +95,7 @@ export class Basis {
     
         const [amptd_global_max, amptd_global_min] = [max_amplitude, 0];
         let   [amptd_local_max,  amptd_local_min ] = [amptd_global_max, amptd_global_min];
-        
+
         for (let i = 0; i< step; i ++) {
             for (let phase_init = phase_local_min; phase_init < phase_local_max * (max_slit+1) / max_slit;
                 phase_init = phase_init + (phase_local_max - phase_local_min) / max_slit as radian) {
@@ -160,7 +160,7 @@ export class Base {
         return errors.reduce( (lhs, rhs) => lhs + rhs, 0 ) / errors.length;
     }
 
-    public fit = (given_samples: [radian, number][], max_slit=4, step = 10) => {
+    public fit = (given_samples: [radian, number][], max_slit=4, step = 10, dropout = 0.0005) => {
         this.offset = given_samples.map(([x,y]) => y).reduce((a,b)=> a+b,0) / given_samples.length;
 
         let samples = given_samples.map(([x, y]) => ([x, y - this.offset] as [radian, number]));
@@ -172,13 +172,15 @@ export class Base {
             samples = samples.map(([x,y]) => ([x, y - basis.get(x)] as [radian, number]))
         } )
 
+        this.base = this.base.filter(basis => basis.asObject().amplitude > dropout)
+
         return this;
     }
 
     public asObject = () => {
         return [{
-            phase_init: 0, amplitude: this.offset, wavelength: Infinity,
-        }, this.base.map(basis => basis.asObject())];
+            phase_init: 0 as radian, amplitude: this.offset, wavelength: Infinity as radian,
+        }, ...this.base.map(basis => basis.asObject())];
     }
 
     static from_wavelengthes = (wavelenthes: radian[] = []) => {

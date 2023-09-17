@@ -1,16 +1,15 @@
 const fs = require('fs');
 const {Base} = require('./index');
-const {PI} = require('./util');
 
-const dots = JSON.parse(fs.readFileSync('./data2.json', 'utf8'));
+const dots = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
 
 const data = dots.map((dot, i) => [i, dot]);
 
 //let base = Base.from_wavelengthes([296, 112, 14, 7, 7/2, 2])
-let base = Base.from_wavelengthes([7])
+let base = Base.from_wavelengthes([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,28,35,42,49,56,63,70,77,84,91,98,105,112,119,126,133,140,147,154,161,168,336])
 
-base.fit(data, 3, 2)
+base.fit(data, 10, 2, 50000)
 
-console.log(JSON.stringify(base.asObject(),undefined,2))
+console.log(base.asObject().map(basis => basis.wavelength))
 
-fs.writeFileSync('expectation.tsv', data.map(([x, y]) => [x, y, ...base.getAll(x), base.getAll(x).reduce( (a,b) => a+b, 0 )].join('\t')).join('\n'))
+fs.writeFileSync('expectation.tsv', data.map(([x, y]) => [x, y, base.get(x)].join('\t')).join('\n'))
