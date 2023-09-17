@@ -9,7 +9,7 @@ const data = dots.map((dot, i) => [i, dot]);
 //let base = Base.from_wavelengthes([296, 112, 14, 7, 7/2, 2])
 let base = Base.from_wavelengthes([7])
 
-base.fit(data)
+base.fit(data, 3, 2)
 
 console.log(JSON.stringify(base.asObject(),undefined,2))
 

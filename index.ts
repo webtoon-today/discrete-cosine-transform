@@ -83,28 +83,26 @@ export class Basis {
         let errors = samples.map(([x, y]) => 
             [y, this.get(x)]
         ).map(([real, expectation]) => (real - expectation) * (real - expectation) )
-
+        
         return errors.reduce( (lhs, rhs) => lhs + rhs, 0 ) / errors.length;
     }
 
     public fit = (samples: [radian, number][], max_slit = 4, max_amplitude=1.0, step=10) => {
-        const points = samples.sort( ([lx,ly],[rx, ry]) => rx - lx)
-    
         let [min_mse_value, min_mse_amptd, min_mse_phase] = [-1, 0, 0 as radian];
     
         const [phase_global_max, phase_global_min] = [2 * PI as radian, 0 as radian];
         let   [phase_local_max,  phase_local_min ] = [phase_global_max, phase_global_min];
     
-        const [amptd_global_max, amptd_global_min] = [2 * max_amplitude, 0];
+        const [amptd_global_max, amptd_global_min] = [max_amplitude, 0];
         let   [amptd_local_max,  amptd_local_min ] = [amptd_global_max, amptd_global_min];
         
         for (let i = 0; i< step; i ++) {
-            for (let phase_init = phase_local_min; phase_init < phase_local_max;
+            for (let phase_init = phase_local_min; phase_init < phase_local_max * (max_slit+1) / max_slit;
                 phase_init = phase_init + (phase_local_max - phase_local_min) / max_slit as radian) {
                 
                 this.set({phase_init})
     
-                for (let amplitude = amptd_local_min; amplitude < amptd_local_max;
+                for (let amplitude = amptd_local_min; amplitude < amptd_local_max * (max_slit+1) / max_slit;
                     amplitude = amplitude + (amptd_local_max - amptd_local_min) / max_slit) {
                     
                     this.set({amplitude})
@@ -135,9 +133,9 @@ export class Base {
     private base: Basis[];
     private offset: number;
 
-    constructor (base: [radian, number, radian][]) {
+    constructor (base: [radian, number, radian][], offset = 0) {
         this.base = base.map(([phase_init, amplitude, wavelength]) => new Basis(phase_init, amplitude, wavelength));
-        this.offset = 0;
+        this.offset = offset;
     }
 
     public getAll = (theta: radian) => {
@@ -166,13 +164,12 @@ export class Base {
         this.offset = given_samples.map(([x,y]) => y).reduce((a,b)=> a+b,0) / given_samples.length;
 
         let samples = given_samples.map(([x, y]) => ([x, y - this.offset] as [radian, number]));
-        let max_amplitude = Math.max( ...samples.map(([x,y]) => Math.abs(y)) )
 
         this.base.forEach( (basis) => {
-            basis.fit(samples, max_slit, max_amplitude, step);
+            let max_amplitude = Math.max( ...samples.map(([x,y]) => Math.abs(y)) )
 
+            basis.fit(samples, max_slit, max_amplitude, step);
             samples = samples.map(([x,y]) => ([x, y - basis.get(x)] as [radian, number]))
-            max_amplitude = Math.max( ...samples.map(([x,y]) => Math.abs(y)) )
         } )
 
         return this;
