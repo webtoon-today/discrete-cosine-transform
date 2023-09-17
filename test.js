@@ -1,7 +1,7 @@
 const fs = require('fs');
 const {Base} = require('./index');
 
-const dots = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
+const dots = JSON.parse(fs.readFileSync('./sample/data.json', 'utf8'));
 
 const data = dots.map((dot, i) => [i, dot]);
 
@@ -12,4 +12,4 @@ base.fit(data, 10, 2, 50000)
 
 console.log(base.asObject().map(basis => basis.wavelength))
 
-fs.writeFileSync('expectation.tsv', data.map(([x, y]) => [x, y, base.get(x)].join('\t')).join('\n'))
+fs.writeFileSync('./sample/expectation.tsv', data.map(([x, y]) => [x, y, base.get(x)].join('\t')).join('\n'))
